@@ -21,3 +21,11 @@ Simple media management for your self-hosted streaming service.
 - Download media files via an external torrent client (qBittorrent, Transmission)
 - Provide a simple CLI interface for managing libraries and downloads
 - Configurable settings via a file or environment variables
+
+## References
+- ASCII art generated with [Patorjik's Text to ASCII Art Generator](https://patorjk.com/software/taag/#p=display&f=Small&t=Hopparr&x=none&v=4&h=4&w=80&we=false)
+- Regular expressions tested with [Regex101](https://regex101.com/)
+
+---
+
+This project is distributed under the MIT License.
