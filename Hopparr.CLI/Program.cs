@@ -71,32 +71,39 @@ partial class MovieItem : ILibraryItem
     }
     if (match.Groups.TryGetValue("mdp", out var mdpGroup))
     {
-      foreach (var mdp in mdpGroup.Captures)
+      if (mdpGroup.Captures.Count > 0)
       {
-        var mdpString = mdp.ToString();
-        if (string.IsNullOrWhiteSpace(mdpString))
+        foreach (var mdp in mdpGroup.Captures)
         {
-          Problems.Add(Problem.InvalidMetadataProviders);
-          continue;
+          var mdpString = mdp.ToString();
+          if (string.IsNullOrWhiteSpace(mdpString))
+          {
+            Problems.Add(Problem.InvalidMetadataProviders);
+            continue;
+          }
+          var mdpParts = mdpString.ToLower().Trim([' ', '[', ']']).Split('-');
+          var provider = mdpParts[0];
+          var id = mdpParts[1];
+          switch (provider)
+          {
+            case "imdbid":
+              MetadataProviders.IMDb = id;
+              break;
+            case "tmdbid":
+              MetadataProviders.TMDB = id;
+              break;
+            case "tvdbid":
+              MetadataProviders.TVDB = id;
+              break;
+            case "mubrid":
+              MetadataProviders.MusicBrainz = id;
+              break;
+          }
         }
-        var mdpParts = mdpString.ToLower().Trim([' ', '[', ']']).Split('-');
-        var provider = mdpParts[0];
-        var id = mdpParts[1];
-        switch (provider)
-        {
-          case "imdbid":
-            MetadataProviders.IMDb = id;
-            break;
-          case "tmdbid":
-            MetadataProviders.TMDB = id;
-            break;
-          case "tvdbid":
-            MetadataProviders.TVDB = id;
-            break;
-          case "mubrid":
-            MetadataProviders.MusicBrainz = id;
-            break;
-        }
+      }
+      else
+      {
+        Problems.Add(Problem.MissingMetadataProviders);
       }
     }
     else
@@ -107,7 +114,10 @@ partial class MovieItem : ILibraryItem
 
   public void Scan()
   {
-    // TODO
+    foreach (var file in Dir.EnumerateFiles())
+    {
+      // TODO
+    }
   }
 
   [GeneratedRegex(@"^(?'title'[a-zA-Z0-9\ \.\!\-\&\,\']+)(?'year'\ \(\d{4}\)){0,1}(?'mdp'\ \[\w+\-\w+\])*$")]
@@ -204,18 +214,15 @@ class Program
     library.Scan();
     Console.WriteLine($"Scanned {library.Items.Count} items in the library.");
 
-    var o = library.Items[0];
-    Console.WriteLine($"""
-    {o.Title} ({o.Year})
-    Location:
-      {o.Dir.FullName}
-    Metadata Providers:
-      IMDb: {o.MetadataProviders.IMDb}
-      TMDB: {o.MetadataProviders.TMDB}
-      TVDB: {o.MetadataProviders.TVDB}
-      MusicBrainz: {o.MetadataProviders.MusicBrainz}
-    Problems:
-      {string.Join(", ", o.Problems)}
-    """);
+    var problems = from item in library.Items where item.Problems.Count > 0 select item;
+    Console.WriteLine($"Found {problems.Count()} items with problems.");
+    foreach (var item in problems)
+    {
+      Console.WriteLine(item.Dir.Name);
+      foreach (var problem in item.Problems)
+      {
+        Console.WriteLine($"  - {problem}");
+      }
+    }
   }
 }
