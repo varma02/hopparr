@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 namespace Hopparr.CLI;
 
+
 enum LibraryType
 {
   Movie,
@@ -35,11 +36,14 @@ interface ILibraryItem
 
 partial class MovieItem : ILibraryItem
 {
+  private static readonly HashSet<string> MediaExtensions = ["mkv", "mp4", "avi", "mov", "wmv", "flv", "mpeg", "mpg", "m4v"];
   public DirectoryInfo Dir { get; set; }
   public string Title { get; set; } = "";
   public int Year { get; set; }
   public MetadataProviders MetadataProviders { get; set; }
   public HashSet<Problem> Problems { get; set; } = [];
+
+  public List<FileInfo>? MediaFiles;
 
   public MovieItem(DirectoryInfo dir)
   {
@@ -95,8 +99,8 @@ partial class MovieItem : ILibraryItem
             case "tvdbid":
               MetadataProviders.TVDB = id;
               break;
-            case "mubrid":
-              MetadataProviders.MusicBrainz = id;
+            default:
+              Problems.Add(Problem.InvalidMetadataProviders);
               break;
           }
         }
@@ -114,9 +118,13 @@ partial class MovieItem : ILibraryItem
 
   public void Scan()
   {
+    MediaFiles = [];
     foreach (var file in Dir.EnumerateFiles())
     {
-      // TODO
+      if (MediaExtensions.Contains(file.Extension.TrimStart('.').ToLower()))
+      {
+        MediaFiles.Add(file);
+      }
     }
   }
 
@@ -157,6 +165,8 @@ class Library
     }
   }
 }
+
+
 class Program
 {
   static void Main(string[] args)
@@ -216,13 +226,25 @@ class Program
 
     var problems = from item in library.Items where item.Problems.Count > 0 select item;
     Console.WriteLine($"Found {problems.Count()} items with problems.");
-    foreach (var item in problems)
+
+    var itm = library.Items[0];
+    Console.WriteLine();
+    Console.WriteLine($"""
+    {itm.Title} ({itm.Year})
+    IMDB: {itm.MetadataProviders.IMDb}, TMDB: {itm.MetadataProviders.TMDB}, TvDB: {itm.MetadataProviders.TVDB}
+    Media files:
+    """);
+    foreach (var mf in itm.MediaFiles)
     {
-      Console.WriteLine(item.Dir.Name);
-      foreach (var problem in item.Problems)
-      {
-        Console.WriteLine($"  - {problem}");
-      }
+      Console.WriteLine($"  - {problem}");
     }
+    Console.WriteLine("Problems:");
+    foreach (var problem in itm.Problems)
+    {
+      Console.WriteLine($"  - {problem}");
+    }
+
+
+
   }
 }
