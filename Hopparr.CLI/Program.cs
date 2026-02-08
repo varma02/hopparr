@@ -3,25 +3,59 @@ using System.Text.RegularExpressions;
 namespace Hopparr.CLI;
 
 
-enum LibraryType
-{
-  Movie,
-  Tv,
-  Music
-}
-enum Problem
+enum LibraryProblem
 {
   MissingTitle,
   MissingYear,
   MissingMetadataProviders,
   InvalidMetadataProviders
 }
+
+enum MediaProblem
+{
+  MissingAudio,
+  MissingVideo,
+  Corrupted
+}
+
 class MetadataProviders
 {
   public string? IMDb { get; set; }
   public string? TMDB { get; set; }
   public string? TVDB { get; set; }
-  public string? MusicBrainz { get; set; }
+}
+
+interface IMediaFile
+{
+  public FileInfo File { get; set; }
+  public double Duration { get; set; }
+  public HashSet<MediaProblem> Problems { get; set; }
+  public void Scan();
+}
+
+interface IVideoFile : IMediaFile
+{
+  public int Width { get; set; }
+  public int Height { get; set; }
+  public HashSet<string> AudioLanguages { get; set; }
+  public bool IsHDR { get; set; }
+  public bool Is3D { get; set; }
+}
+
+class MovieFile(FileInfo file) : IVideoFile
+{
+  public FileInfo File { get; set; } = file;
+  public double Duration { get; set; }
+  public HashSet<MediaProblem> Problems { get; set; } = [];
+  public int Width { get; set; }
+  public int Height { get; set; }
+  public HashSet<string> AudioLanguages { get; set; } = [];
+  public bool IsHDR { get; set; }
+  public bool Is3D { get; set; }
+  public void Scan()
+  {
+    // TODO
+  }
 }
 
 interface ILibraryItem
@@ -30,7 +64,8 @@ interface ILibraryItem
   public string Title { get; set; }
   public int Year { get; set; }
   public MetadataProviders MetadataProviders { get; set; }
-  public HashSet<Problem> Problems { get; set; }
+  public HashSet<LibraryProblem> Problems { get; set; }
+  public List<IMediaFile> MediaFiles { get; set; }
   public void Scan();
 }
 
@@ -41,9 +76,9 @@ partial class MovieItem : ILibraryItem
   public string Title { get; set; } = "";
   public int Year { get; set; }
   public MetadataProviders MetadataProviders { get; set; }
-  public HashSet<Problem> Problems { get; set; } = [];
+  public HashSet<LibraryProblem> Problems { get; set; } = [];
 
-  public List<FileInfo>? MediaFiles;
+  public List<MovieFile> MediaFiles { get; set; } = [];
 
   public MovieItem(DirectoryInfo dir)
   {
@@ -56,7 +91,7 @@ partial class MovieItem : ILibraryItem
     }
     else
     {
-      Problems.Add(Problem.MissingTitle);
+      Problems.Add(LibraryProblem.MissingTitle);
     }
     if (match.Groups.TryGetValue("year", out var yearGroup))
     {
@@ -66,12 +101,12 @@ partial class MovieItem : ILibraryItem
       }
       else
       {
-        Problems.Add(Problem.MissingYear);
+        Problems.Add(LibraryProblem.MissingYear);
       }
     }
     else
     {
-      Problems.Add(Problem.MissingYear);
+      Problems.Add(LibraryProblem.MissingYear);
     }
     if (match.Groups.TryGetValue("mdp", out var mdpGroup))
     {
@@ -82,7 +117,7 @@ partial class MovieItem : ILibraryItem
           var mdpString = mdp.ToString();
           if (string.IsNullOrWhiteSpace(mdpString))
           {
-            Problems.Add(Problem.InvalidMetadataProviders);
+            Problems.Add(LibraryProblem.InvalidMetadataProviders);
             continue;
           }
           var mdpParts = mdpString.ToLower().Trim([' ', '[', ']']).Split('-');
@@ -100,19 +135,19 @@ partial class MovieItem : ILibraryItem
               MetadataProviders.TVDB = id;
               break;
             default:
-              Problems.Add(Problem.InvalidMetadataProviders);
+              Problems.Add(LibraryProblem.InvalidMetadataProviders);
               break;
           }
         }
       }
       else
       {
-        Problems.Add(Problem.MissingMetadataProviders);
+        Problems.Add(LibraryProblem.MissingMetadataProviders);
       }
     }
     else
     {
-      Problems.Add(Problem.MissingMetadataProviders);
+      Problems.Add(LibraryProblem.MissingMetadataProviders);
     }
   }
 
@@ -123,7 +158,7 @@ partial class MovieItem : ILibraryItem
     {
       if (MediaExtensions.Contains(file.Extension.TrimStart('.').ToLower()))
       {
-        MediaFiles.Add(file);
+        // MediaFiles.Add(file);
       }
     }
   }
@@ -132,40 +167,36 @@ partial class MovieItem : ILibraryItem
   private static partial Regex MovieRegex();
 }
 
-class Library
+abstract class Library<T> where T : ILibraryItem
 {
-  public LibraryType Type { get; set; }
   public string Path { get; set; }
   public DirectoryInfo Dir;
-  public List<ILibraryItem> Items { get; set; } = [];
+  public List<T> Items { get; set; } = [];
 
-  public Library(LibraryType type, string path)
+  public Library(string path)
   {
-    Type = type;
     var libraryDir = new DirectoryInfo(path);
     if (!libraryDir.Exists) throw new DirectoryNotFoundException();
     Path = libraryDir.FullName;
     Dir = libraryDir;
   }
 
-  public void Scan()
+  public abstract void Scan();
+}
+
+class MovieLibrary(string path) : Library<MovieItem>(path)
+{
+  public override void Scan()
   {
+    Items = [];
     foreach (var dir in Dir.EnumerateDirectories())
     {
-      switch (Type)
-      {
-        case LibraryType.Movie:
-          var movieItem = new MovieItem(dir);
-          movieItem.Scan();
-          Items.Add(movieItem);
-          break;
-        default:
-          throw new NotImplementedException("Library type not implemented yet.");
-      }
+      var movieItem = new MovieItem(dir);
+      movieItem.Scan();
+      Items.Add(movieItem);
     }
   }
 }
-
 
 class Program
 {
@@ -187,7 +218,7 @@ class Program
       Usage: hopparr <library-type> <library-path>
       
       Library Types:
-        movie, tv, music
+        movie, tv
 
       Example usage:
         hopparr movie /path/to/movie/library
@@ -195,31 +226,15 @@ class Program
       return;
     }
 
-    Library library;
-    try
-    {
-      var libraryType = args[0].ToLower() switch
-      {
-        "movie" => LibraryType.Movie,
-        "tv" => LibraryType.Tv,
-        "music" => LibraryType.Music,
-        _ => throw new ArgumentException("Invalid library type")
-      };
-      var libraryDir = args[1];
-      library = new Library(libraryType, libraryDir);
-    }
-    catch (DirectoryNotFoundException)
-    {
-      Console.WriteLine("[Fatal] The specified library path does not exist.");
-      return;
-    }
-    catch (ArgumentException ex)
-    {
-      Console.WriteLine($"[Fatal] {ex.Message}");
-      return;
-    }
 
-    Console.WriteLine($"Selected library {library.Path} of type {library.Type}.");
+    var library = args[0].ToLower() switch
+    {
+      "movie" => new MovieLibrary(args[1]),
+      "tv" => throw new NotImplementedException("TV library not implemented yet"),
+      _ => throw new ArgumentException("Invalid library type")
+    };
+
+    Console.WriteLine($"Selected library {library.Path} of type {args[0]}.");
 
     library.Scan();
     Console.WriteLine($"Scanned {library.Items.Count} items in the library.");
@@ -231,20 +246,17 @@ class Program
     Console.WriteLine();
     Console.WriteLine($"""
     {itm.Title} ({itm.Year})
-    IMDB: {itm.MetadataProviders.IMDb}, TMDB: {itm.MetadataProviders.TMDB}, TvDB: {itm.MetadataProviders.TVDB}
+    IMDB: {itm.MetadataProviders.IMDb ?? "N/A"}, TMDB: {itm.MetadataProviders.TMDB ?? "N/A"}, TvDB: {itm.MetadataProviders.TVDB ?? "N/A"}
     Media files:
     """);
-    foreach (var mf in itm.MediaFiles)
+    foreach (var mf in itm.MediaFiles ?? [])
     {
-      Console.WriteLine($"  - {problem}");
+      Console.WriteLine($"  - {mf}");
     }
-    Console.WriteLine("Problems:");
+    Console.WriteLine("Problems: ");
     foreach (var problem in itm.Problems)
     {
       Console.WriteLine($"  - {problem}");
     }
-
-
-
   }
 }
