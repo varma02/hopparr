@@ -65,7 +65,6 @@ interface ILibraryItem
   public int Year { get; set; }
   public MetadataProviders MetadataProviders { get; set; }
   public HashSet<LibraryProblem> Problems { get; set; }
-  public List<IMediaFile> MediaFiles { get; set; }
   public void Scan();
 }
 
@@ -158,7 +157,7 @@ partial class MovieItem : ILibraryItem
     {
       if (MediaExtensions.Contains(file.Extension.TrimStart('.').ToLower()))
       {
-        // MediaFiles.Add(file);
+        MediaFiles.Add(new MovieFile(file));
       }
     }
   }
@@ -242,21 +241,74 @@ class Program
     var problems = from item in library.Items where item.Problems.Count > 0 select item;
     Console.WriteLine($"Found {problems.Count()} items with problems.");
 
-    var itm = library.Items[0];
-    Console.WriteLine();
-    Console.WriteLine($"""
-    {itm.Title} ({itm.Year})
-    IMDB: {itm.MetadataProviders.IMDb ?? "N/A"}, TMDB: {itm.MetadataProviders.TMDB ?? "N/A"}, TvDB: {itm.MetadataProviders.TVDB ?? "N/A"}
-    Media files:
-    """);
-    foreach (var mf in itm.MediaFiles ?? [])
-    {
-      Console.WriteLine($"  - {mf}");
-    }
-    Console.WriteLine("Problems: ");
-    foreach (var problem in itm.Problems)
-    {
-      Console.WriteLine($"  - {problem}");
-    }
+    // HashSet<LibraryProblem> skippedProblems = [];
+    // foreach (var movie in problems)
+    // {
+    //   Console.WriteLine($"""
+
+    //   Title: {movie.Title} ({movie.Year})
+    //   Directory: {movie.Dir.FullName}
+    //   Options:
+    //   """);
+    //   var currentProblems = movie.Problems.Except(skippedProblems).ToList();
+    //   for (int i = 0; i < currentProblems.Count; i++)
+    //   {
+    //     Console.WriteLine($"\t{i + 1} - Fix {currentProblems[i]}");
+    //   }
+    //   Console.WriteLine("\ts - Skip this movie");
+
+    //   while (true)
+    //   {
+    //     Console.Write("> ");
+    //     var input = Console.ReadLine();
+
+    //     if (input == "s")
+    //     {
+    //       Console.WriteLine("Skipping this movie.");
+    //       break;
+    //     }
+
+    //     if (int.TryParse(input, out var option))
+    //     {
+    //       if (option >= 1 && option <= currentProblems.Count)
+    //       {
+    //         var problemToFix = currentProblems[option - 1];
+    //         Console.WriteLine($"""
+
+    //         Problem: {problemToFix}
+    //         Options:
+    //         """);
+
+    //         switch (problemToFix)
+    //         {
+    //           case LibraryProblem.MissingMetadataProviders:
+    //             Console.WriteLine("\t1 - Search TheMovieDB");
+    //             Console.WriteLine("\t2 - Input metadata provider manually");
+    //             Console.WriteLine("\ts - Skip this problem");
+    //             Console.WriteLine("\tss - Skip all problems of this type");
+    //             Console.Write("> ");
+    //             var mdpInput = Console.ReadLine();
+    //             if (mdpInput == "s")
+    //             {
+    //               Console.WriteLine("Skipping this problem.");
+    //               continue;
+    //             }
+    //             if (mdpInput == "ss")
+    //             {
+    //               Console.WriteLine("Skipping all problems of this type.");
+    //               skippedProblems.Add(LibraryProblem.MissingMetadataProviders);
+    //               continue;
+    //             }
+    //             break;
+    //           default:
+    //             Console.WriteLine("No fix implemented for this problem yet, this problem.");
+    //             continue;
+    //         }
+    //       }
+    //     }
+
+    //     Console.WriteLine("Invalid option, try again.");
+    //   }
+    // }
   }
 }
