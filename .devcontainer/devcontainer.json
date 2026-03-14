@@ -1,7 +1,9 @@
 {
   "name": "DotNet Framework 10",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
-  "features": {},
+  "features": {
+    "ghcr.io/audacioustux/devcontainers/bun:1": {}
+  },
   "customizations": {
     "vscode": {
       "extensions": ["ms-dotnettools.csdevkit"]
