@@ -6,7 +6,10 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-dotnettools.csdevkit"]
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "bradlc.vscode-tailwindcss"
+      ]
     }
   }
 }
