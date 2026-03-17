@@ -5,9 +5,12 @@ export const Route = createFileRoute("/")({ component: App });
 
 function App() {
   return (
-    <main>
-      Hello world!
-      <Button>Click me!</Button>
+    <main className="flex-1">
+      <img
+        className="opacity-75"
+        src="https://image.tmdb.org/t/p/original/n6vVs6z8obNbExdD3QHTr4Utu1Z.jpg"
+        alt="The Boys backdrop image"
+      />
     </main>
   );
 }

@@ -50,7 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="antialiased">
+      <body className="antialiased flex flex-col min-h-screen">
         <TanStackQueryProvider>
           <Header />
           {children}
