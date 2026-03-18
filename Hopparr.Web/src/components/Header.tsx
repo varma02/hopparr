@@ -5,8 +5,8 @@ import Logo from "../../../media/logo/logo.png";
 
 export default function Header() {
   return (
-    <header className="fixed top-0 right-0 w-full py-4 px-6 flex justify-between items-center z-20">
-      <div className="flex gap-2">
+    <header className="fixed top-0 right-0 w-full py-4 px-6 grid grid-cols-3 place-items-center z-20">
+      <div className="flex gap-2 mr-auto">
         <img className="object-contain h-8" src={Logo} alt="Hopparr Logo" />
         <h1 className="text-xl font-bold">Hopparr</h1>
       </div>
@@ -18,7 +18,9 @@ export default function Header() {
           <TabsTrigger value="tv-shows">TV Shows</TabsTrigger>
         </TabsList>
       </Tabs>
-      <ProfileMenu />
+      <div className="ml-auto flex items-center">
+        <ProfileMenu />
+      </div>
     </header>
   );
 }
