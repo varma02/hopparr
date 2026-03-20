@@ -1,0 +1,8 @@
+@import "@vidstack/react/player/styles/default/theme.css";
+@import "@vidstack/react/player/styles/default/layouts/video.css";
+
+* {
+  --video-focus-ring: none;
+  --video-border: none;
+  --video-border-radius: 0;
+}

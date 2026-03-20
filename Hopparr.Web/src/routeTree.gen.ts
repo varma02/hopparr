@@ -9,50 +9,147 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as header_footer_layoutRouteRouteImport } from './routes/(header_footer_layout)/route'
+import { Route as header_footer_layoutIndexRouteImport } from './routes/(header_footer_layout)/index'
+import { Route as playerPlayRouteImport } from './routes/(player)/play'
+import { Route as header_footer_layoutDetailsMovIDIndexRouteImport } from './routes/(header_footer_layout)/details/$movID/index'
+import { Route as header_footer_layoutDetailsMovIDSeasonSeasonIDRouteImport } from './routes/(header_footer_layout)/details/$movID/season/$seasonID'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const header_footer_layoutRouteRoute =
+  header_footer_layoutRouteRouteImport.update({
+    id: '/(header_footer_layout)',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const header_footer_layoutIndexRoute =
+  header_footer_layoutIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => header_footer_layoutRouteRoute,
+  } as any)
+const playerPlayRoute = playerPlayRouteImport.update({
+  id: '/(player)/play',
+  path: '/play',
   getParentRoute: () => rootRouteImport,
 } as any)
+const header_footer_layoutDetailsMovIDIndexRoute =
+  header_footer_layoutDetailsMovIDIndexRouteImport.update({
+    id: '/details/$movID/',
+    path: '/details/$movID/',
+    getParentRoute: () => header_footer_layoutRouteRoute,
+  } as any)
+const header_footer_layoutDetailsMovIDSeasonSeasonIDRoute =
+  header_footer_layoutDetailsMovIDSeasonSeasonIDRouteImport.update({
+    id: '/details/$movID/season/$seasonID',
+    path: '/details/$movID/season/$seasonID',
+    getParentRoute: () => header_footer_layoutRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/play': typeof playerPlayRoute
+  '/': typeof header_footer_layoutIndexRoute
+  '/details/$movID/': typeof header_footer_layoutDetailsMovIDIndexRoute
+  '/details/$movID/season/$seasonID': typeof header_footer_layoutDetailsMovIDSeasonSeasonIDRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/play': typeof playerPlayRoute
+  '/': typeof header_footer_layoutIndexRoute
+  '/details/$movID': typeof header_footer_layoutDetailsMovIDIndexRoute
+  '/details/$movID/season/$seasonID': typeof header_footer_layoutDetailsMovIDSeasonSeasonIDRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/(header_footer_layout)': typeof header_footer_layoutRouteRouteWithChildren
+  '/(player)/play': typeof playerPlayRoute
+  '/(header_footer_layout)/': typeof header_footer_layoutIndexRoute
+  '/(header_footer_layout)/details/$movID/': typeof header_footer_layoutDetailsMovIDIndexRoute
+  '/(header_footer_layout)/details/$movID/season/$seasonID': typeof header_footer_layoutDetailsMovIDSeasonSeasonIDRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/play'
+    | '/'
+    | '/details/$movID/'
+    | '/details/$movID/season/$seasonID'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/play' | '/' | '/details/$movID' | '/details/$movID/season/$seasonID'
+  id:
+    | '__root__'
+    | '/(header_footer_layout)'
+    | '/(player)/play'
+    | '/(header_footer_layout)/'
+    | '/(header_footer_layout)/details/$movID/'
+    | '/(header_footer_layout)/details/$movID/season/$seasonID'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  header_footer_layoutRouteRoute: typeof header_footer_layoutRouteRouteWithChildren
+  playerPlayRoute: typeof playerPlayRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/(header_footer_layout)': {
+      id: '/(header_footer_layout)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof header_footer_layoutRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(header_footer_layout)/': {
+      id: '/(header_footer_layout)/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof header_footer_layoutIndexRouteImport
+      parentRoute: typeof header_footer_layoutRouteRoute
+    }
+    '/(player)/play': {
+      id: '/(player)/play'
+      path: '/play'
+      fullPath: '/play'
+      preLoaderRoute: typeof playerPlayRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(header_footer_layout)/details/$movID/': {
+      id: '/(header_footer_layout)/details/$movID/'
+      path: '/details/$movID'
+      fullPath: '/details/$movID/'
+      preLoaderRoute: typeof header_footer_layoutDetailsMovIDIndexRouteImport
+      parentRoute: typeof header_footer_layoutRouteRoute
+    }
+    '/(header_footer_layout)/details/$movID/season/$seasonID': {
+      id: '/(header_footer_layout)/details/$movID/season/$seasonID'
+      path: '/details/$movID/season/$seasonID'
+      fullPath: '/details/$movID/season/$seasonID'
+      preLoaderRoute: typeof header_footer_layoutDetailsMovIDSeasonSeasonIDRouteImport
+      parentRoute: typeof header_footer_layoutRouteRoute
     }
   }
 }
 
+interface header_footer_layoutRouteRouteChildren {
+  header_footer_layoutIndexRoute: typeof header_footer_layoutIndexRoute
+  header_footer_layoutDetailsMovIDIndexRoute: typeof header_footer_layoutDetailsMovIDIndexRoute
+  header_footer_layoutDetailsMovIDSeasonSeasonIDRoute: typeof header_footer_layoutDetailsMovIDSeasonSeasonIDRoute
+}
+
+const header_footer_layoutRouteRouteChildren: header_footer_layoutRouteRouteChildren =
+  {
+    header_footer_layoutIndexRoute: header_footer_layoutIndexRoute,
+    header_footer_layoutDetailsMovIDIndexRoute:
+      header_footer_layoutDetailsMovIDIndexRoute,
+    header_footer_layoutDetailsMovIDSeasonSeasonIDRoute:
+      header_footer_layoutDetailsMovIDSeasonSeasonIDRoute,
+  }
+
+const header_footer_layoutRouteRouteWithChildren =
+  header_footer_layoutRouteRoute._addFileChildren(
+    header_footer_layoutRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  header_footer_layoutRouteRoute: header_footer_layoutRouteRouteWithChildren,
+  playerPlayRoute: playerPlayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

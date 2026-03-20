@@ -52,10 +52,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="antialiased flex flex-col min-h-screen">
         <TanStackQueryProvider>
-          <Header />
           {children}
-          <Footer />
-          <TanStackDevtools
+          {/* <TanStackDevtools
             config={{
               position: "bottom-right",
             }}
@@ -66,7 +64,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               },
               TanStackQueryDevtools,
             ]}
-          />
+          /> */}
         </TanStackQueryProvider>
         <Scripts />
       </body>
