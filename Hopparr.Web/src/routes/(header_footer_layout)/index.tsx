@@ -8,8 +8,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import Autoplay from "embla-carousel-autoplay";
 import { MovieBanner } from "#/components/MovieBanner";
 import { HorizontalMovieCarousel } from "#/components/HorizontalMovieCarousel";
+import { useQuery } from "@tanstack/react-query";
+import { apiBaseUrl } from "#/lib/utils";
+import { Spinner } from "#/components/ui/spinner";
 
-export const Route = createFileRoute("/(header_footer_layout)/")({ component: App });
+export const Route = createFileRoute("/(header_footer_layout)/")({
+  component: App,
+});
 
 function App() {
   const heroCarouselOpts: Partial<CarouselOptions> = {
@@ -22,6 +27,23 @@ function App() {
     delay: 5000,
     stopOnInteraction: true,
   });
+
+  const heroMovies = useQuery({
+    queryKey: ["hero-movies"],
+    queryFn: async () => {
+      const res = await fetch(new URL("Movies", apiBaseUrl()));
+      console.log(res);
+      return res.json();
+    },
+  });
+
+  if (heroMovies.isPending) {
+    return (
+      <main className="flex-1 flex items-center justify-center">
+        <Spinner className="size-16" />
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1">
