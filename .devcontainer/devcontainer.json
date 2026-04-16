@@ -1,15 +1,16 @@
 {
   "name": "DotNet Framework 10",
   "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  "remoteUser": "vscode",
+
   "features": {
     "ghcr.io/audacioustux/devcontainers/bun:1": {}
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-dotnettools.csdevkit",
-        "bradlc.vscode-tailwindcss"
-      ]
+      "extensions": ["ms-dotnettools.csdevkit", "bradlc.vscode-tailwindcss"]
     }
-  }
+  },
+
+  "runArgs": ["--userns=keep-id", "--tmpfs=/tmp:rw,exec,nosuid,nodev,mode=1777"]
 }
